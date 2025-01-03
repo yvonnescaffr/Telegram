@@ -1,42 +1,175 @@
-# 2024年如何在Telegram上无需电话号码注册
 
-保罗·杜罗夫的即时通讯软件Telegram的兴起已经迅速成为我们日常生活中不可或缺的一部分。不到十年的时间，它已经深入到休闲和商业活动中，让我们很难想象没有它的生活。有时，我们需要在Telegram上注册而不使用电话号码，今天我们将深入探讨这个问题。
+# How to Solve Asynchronous Data Loading in Java Web Scraping
 
-## 为什么需要无电话号码注册？
+![Java Web Scraping](https://www.eolink.com/news/zb_users/upload/2022/08/20220805174511165969271139602.jpg)
 
-- 出于个人或商业目的，或者匿名交流的需要，可能需要多个帐户。
-- 当购买SIM卡不方便时，了解如何注册而无需电话号码非常方便。
+Asynchronous data loading is a common challenge in web scraping, especially in modern **front-end/back-end separated projects**. This article will walk you through two primary methods to handle asynchronous data loading while scraping, using examples like extracting headlines from NetEase News.
 
-## 购买预制帐户的风险
+---
 
-- 购买预制帐户存在潜在的欺诈风险。
-- Telegram管理员积极监视可疑活动。
-- 预制帐户价格昂贵，安全性较低，与使用虚拟号码相比。
+**Stop wasting time on proxies and CAPTCHAs!** ScraperAPI’s simple API handles millions of web scraping requests, so you can focus on the data. Get structured data from Amazon, Google, Walmart, and more. **Start your free trial today!** 👉 [https://www.scraperapi.com/?fp_ref=coupons](https://www.scraperapi.com/?fp_ref=coupons)
 
-## 使用TIGER SMS进行注册
+---
 
-- [TIGER SMS](https://tiger-sms.com/?ref=276094)提供Telegram注册的虚拟号码，价格从10卢布起。
-- 优点包括价格实惠，匿名性和可靠的客户支持。
+## Common Approaches to Solve Asynchronous Data Loading
 
-![image](https://github.com/yvonnescaffr/Telegram/assets/169997938/f073b77d-eddf-444e-863d-87114a0cc128)
+### 1. Embedded Browser Kernel
 
-## 注册无需电话号码的步骤指南
+This method involves using tools to render JavaScript-generated content, allowing you to scrape dynamic pages just like static ones. Commonly used tools include:
 
-1. 在[TIGER SMS](https://tiger-sms.com/?ref=276094)网站上注册。
-2. 选择您的国家，并选择Telegram进行注册。
-3. 购买Telegram的[虚拟号码](https://tiger-sms.com/?ref=276094)。
-4. 从“活动号码”选项卡中访问号码。
-5. 使用虚拟号码进行Telegram注册。
-6. 短信验证将显示在“状态”列中。
+- **Selenium**  
+- **HtmlUnit**  
+- **PhantomJS**
 
-## 恢复被封禁的Telegram帐户
+While effective, these tools have drawbacks, such as low efficiency and instability.
 
-- 等待临时禁令到期。
-- 对于永久禁令，请按照前面概述的注册流程。
+### 2. Reverse Parsing Method
 
-## 总结
+This approach identifies **AJAX requests** fetching data from the server. By targeting these requests, you can directly scrape structured JSON data, bypassing JavaScript-rendered pages.
 
-- 像Telegram这样的现代消息平台提供了广泛的沟通功能。
-- 无论是个人还是商业用途，我们的建议都将帮助您在无需电话号码的情况下创建Telegram帐户。
-- 责任地使用这些服务。
+**Advantages**:
+- Data is already in JSON format, simplifying parsing.
+- Interfaces are less prone to changes compared to web pages.
 
+**Challenges**:
+- Requires patience and skill to locate the correct AJAX requests.
+- Ineffective for pages rendered purely with JavaScript fragments.
+
+---
+
+## Example: Extracting Headlines from NetEase News
+
+### Using Selenium (Embedded Browser Kernel)
+
+Selenium is an automation tool often used in testing but is also effective for solving asynchronous data issues in web scraping. Follow these steps:
+
+#### Steps to Use Selenium
+1. **Add Selenium Dependency**:  
+   Include Selenium in your `pom.xml`:
+
+   ```xml
+   <dependency>
+       <groupId>org.seleniumhq.selenium</groupId>
+       <artifactId>selenium-java</artifactId>
+       <version>3.141.59</version>
+   </dependency>
+   ```
+
+2. **Download Browser Driver**:  
+   Download the appropriate driver (e.g., **chromedriver**) from [ChromeDriver](https://npm.taobao.org/mirrors/chromedriver/).
+
+3. **Set Driver Path**:  
+   Set the path of the driver in your Java environment:
+
+   ```java
+   System.getProperties().setProperty("webdriver.chrome.driver", "chromedriver.exe");
+   ```
+
+#### Selenium Code Example
+
+```java
+public void selenium(String url) {
+    System.getProperties().setProperty("webdriver.chrome.driver", "chromedriver.exe");
+
+    // Configure headless browser
+    ChromeOptions chromeOptions = new ChromeOptions();
+    chromeOptions.addArguments("--headless");
+    WebDriver webDriver = new ChromeDriver(chromeOptions);
+
+    webDriver.get(url);
+
+    // Extract news headlines
+    List<WebElement> webElements = webDriver.findElements(By.xpath("//div[@class='news_title']/h3/a"));
+    for (WebElement webElement : webElements) {
+        String articleUrl = webElement.getAttribute("href");
+        String title = webElement.getText();
+        if (articleUrl.contains("https://news.163.com/")) {
+            System.out.println("Article Title: " + title + " , URL: " + articleUrl);
+        }
+    }
+
+    webDriver.close();
+}
+```
+
+**Output**: Extracted news headlines from NetEase News.
+
+---
+
+### Using Reverse Parsing (Targeting AJAX Requests)
+
+This method involves analyzing the network requests to find the AJAX call fetching data. Here's how to apply it:
+
+1. **Locate the AJAX Request**:
+   Use browser developer tools (`F12` → Network tab). Search for requests matching content keywords. For NetEase News, the request is:
+   `https://temp.163.com/special/00804KVA/cm_yaowen.js?callback=data_callback`.
+
+2. **Fetch and Parse JSON Data**:
+   Use a library like `FastJSON` to parse the JSON data.
+
+#### Steps to Use Reverse Parsing
+1. **Add FastJSON Dependency**:  
+   Include it in your `pom.xml`:
+
+   ```xml
+   <dependency>
+       <groupId>com.alibaba</groupId>
+       <artifactId>fastjson</artifactId>
+       <version>1.2.59</version>
+   </dependency>
+   ```
+
+2. **Extract JSON Data**:  
+   Clean the response to remove unwanted characters and parse it into a `JSONArray`.
+
+#### Reverse Parsing Code Example
+
+```java
+public void httpclientMethod(String url) throws IOException {
+    CloseableHttpClient httpclient = HttpClients.createDefault();
+    HttpGet httpGet = new HttpGet(url);
+    CloseableHttpResponse response = httpclient.execute(httpGet);
+
+    if (response.getStatusLine().getStatusCode() == 200) {
+        String body = EntityUtils.toString(response.getEntity(), "GBK");
+
+        // Clean the response
+        body = body.replace("data_callback(", "");
+        body = body.substring(0, body.lastIndexOf(")"));
+
+        // Parse JSON
+        JSONArray jsonArray = JSON.parseArray(body);
+        for (int i = 0; i < jsonArray.size(); i++) {
+            JSONObject data = jsonArray.getJSONObject(i);
+            System.out.println("Article Title: " + data.getString("title") + " , URL: " + data.getString("docurl"));
+        }
+    } else {
+        System.out.println("Failed! Status Code: " + response.getStatusLine().getStatusCode());
+    }
+}
+```
+
+**Output**: Extracted headlines and URLs.
+
+---
+
+## Comparison of Both Methods
+
+| Method             | Advantages                           | Disadvantages                      |
+|--------------------|---------------------------------------|-------------------------------------|
+| **Embedded Browser** | Handles JavaScript-rendered pages    | Slower and less stable              |
+| **Reverse Parsing**  | Faster and more reliable             | Cannot handle purely JS-rendered pages |
+
+---
+
+## Conclusion
+
+Both **Selenium** and **Reverse Parsing** can effectively solve asynchronous data loading issues in web scraping. While Selenium excels in handling JavaScript-heavy pages, reverse parsing is more efficient and stable for JSON-based APIs.
+
+Choose the method based on the specific requirements of your scraping project. For more consistent results and reduced complexity, reverse parsing is often the preferred choice.
+
+---
+
+**Simplify your web scraping projects!** ScraperAPI handles proxies, CAPTCHAs, and dynamic content with ease. **Try it now for free!** 👉 [https://www.scraperapi.com/?fp_ref=coupons](https://www.scraperapi.com/?fp_ref=coupons)
+
+---
